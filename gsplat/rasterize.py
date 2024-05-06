@@ -96,6 +96,7 @@ def rasterize_indices(
     opacity: Float[Tensor, "*batch 1"],
     img_height: int,
     img_width: int,
+    block_width: int
 ) -> Tensor:
     """Rasterizes 2D gaussians by sorting and binning gaussian intersections for each tile and returns an N-dimensional output using alpha-compositing.
 
@@ -111,6 +112,7 @@ def rasterize_indices(
         opacity (Tensor): opacity associated with the gaussians.
         img_height (int): height of the rendered image.
         img_width (int): width of the rendered image.
+        block_width (int): MUST match whatever block width was used in the project_gaussians call. integer number of pixels between 2 and 16 inclusive
 
     Returns:
         A Tensor:
@@ -121,8 +123,11 @@ def rasterize_indices(
     if xys.ndimension() != 2 or xys.size(1) != 2:
         raise ValueError("xys must have dimensions (N, 2)")
 
+    assert block_width > 1 and block_width <= 16, "block_width must be between 2 and 16"
+    
     num_points = xys.size(0)
-    BLOCK_X, BLOCK_Y = 16, 16
+
+    BLOCK_X, BLOCK_Y = block_width, block_width
     tile_bounds = (
         (img_width + BLOCK_X - 1) // BLOCK_X,
         (img_height + BLOCK_Y - 1) // BLOCK_Y,
@@ -151,6 +156,7 @@ def rasterize_indices(
             radii,
             cum_tiles_hit,
             tile_bounds,
+            block_width
         )
 
         gaussian_ids, pixel_ids, intersects = _C.rasterize_indices(

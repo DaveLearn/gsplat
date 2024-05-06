@@ -56,7 +56,7 @@ def project_gaussians(
         - **num_tiles_hit** (Tensor): number of tiles hit per gaussian.
         - **cov3d** (Tensor): 3D covariances.
     """
-    assert block_width > 1 and block_width <= 16, "block_width must be between 2 and 16"
+    assert block_width > 1 and block_width <= 16, f'block_width must be between 2 and 16, was {block_width}'
     assert (quats.norm(dim=-1) - 1 < 1e-6).all(), "quats must be normalized"
     return _ProjectGaussians.apply(
         means3d.contiguous(),

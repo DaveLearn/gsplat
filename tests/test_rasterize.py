@@ -32,6 +32,7 @@ def _rasterize_gaussians(
     opacity: Float[Tensor, "*batch 1"],
     img_height: int,
     img_width: int,
+    block_width: int,
     background: Optional[Float[Tensor, "channels"]] = None,
     return_alpha: Optional[bool] = False,
 ) -> Tensor:
@@ -52,10 +53,10 @@ def _rasterize_gaussians(
         ),
         dim=-1,
     )  # [H, W, 2]
-    pixel_coords = pixel_coords.reshape(-1, 2)
+    pixel_coords = pixel_coords.reshape(-1, 2) + 0.5
 
     gs_ids, pixel_ids = rasterize_indices(
-        xys, depths, radii, conics, num_tiles_hit, opacity, H, W
+        xys, depths, radii, conics, num_tiles_hit, opacity, H, W, block_width
     )
     pixel_ids = pixel_ids.long()
 
@@ -107,43 +108,43 @@ def test_rasterize(N: int = 1000, D: int = 3, profile: bool = False):
     viewmat = projmat = torch.eye(4, device=device)
     fx = fy = 3.0
     H, W = 256, 384
-    BLOCK_X = BLOCK_Y = 16
-    tile_bounds = (W + BLOCK_X - 1) // BLOCK_X, (H + BLOCK_Y - 1) // BLOCK_Y, 1
+    #BLOCK_X = BLOCK_Y = 16
+    #tile_bounds = (W + BLOCK_X - 1) // BLOCK_X, (H + BLOCK_Y - 1) // BLOCK_Y, 1
+    block_width=8
 
-    xys, depths, radii, conics, num_tiles_hit, cov3d = project_gaussians(
+    xys, depths, radii, conics, compensation, num_tiles_hit, cov3d = project_gaussians(
         means3d,
         scales,
         1,
         quats,
         viewmat,
-        projmat,
         fx,
         fy,
         W / 2,
         H / 2,
         H,
         W,
-        tile_bounds,
+        block_width,
     )
     # warmup
     if profile:
         rasterize_gaussians(
-            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W, background
+            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W, block_width, background
         )
         _rasterize_gaussians(
-            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W, background
+            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W, block_width, background
         )
 
     pbar = tqdm.trange(100) if profile else range(1)
     for _ in pbar:
         render = rasterize_gaussians(
-            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W, background
+            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W,  block_width, background
         )
 
     pbar = tqdm.trange(100) if profile else range(1)
     for _ in pbar:
         render2 = _rasterize_gaussians(
-            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W, background
+            xys, depths, radii, conics, num_tiles_hit, rgbs, opacities, H, W,  block_width, background
         )
     torch.testing.assert_close(render, render2)
 
