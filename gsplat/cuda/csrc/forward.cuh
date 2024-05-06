@@ -135,3 +135,14 @@ __global__ void rasterize_indices(
     int* __restrict__ out_gaussian_ids,
     int* __restrict__ out_pixel_ids
 );
+
+__global__ void rasterize_surfel_indices(
+    const dim3 tile_bounds,
+    const dim3 img_size,
+    const int32_t* __restrict__ gaussian_ids_sorted,
+    const int2* __restrict__ tile_bins,
+    const float2* __restrict__ xys,
+    const float3* __restrict__ conics,
+    const float* __restrict__ opacities,
+    int* __restrict__ out_surfel_ids
+);
