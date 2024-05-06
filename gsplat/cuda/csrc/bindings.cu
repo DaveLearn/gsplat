@@ -608,7 +608,7 @@ rasterize_surfel_indices_tensor(
     const int img_height = img_size_dim3.y;
 
     torch::Tensor out_surfel_ids = torch::zeros(
-        {img_height, img_width}, xys.options().dtype(torch::kInt32),
+        {img_height, img_width}, xys.options().dtype(torch::kInt32)
     ).fill_(-1);
 
     rasterize_surfel_indices<<<tile_bounds_dim3, block_dim3>>>(
@@ -619,7 +619,7 @@ rasterize_surfel_indices_tensor(
         (float2 *)xys.contiguous().data_ptr<float>(),
         (float3 *)conics.contiguous().data_ptr<float>(),
         opacities.contiguous().data_ptr<float>(),
-        out_surfel_ids.contiguous().data_ptr<int>(),
+        out_surfel_ids.contiguous().data_ptr<int>()
     );
 
     return out_surfel_ids;

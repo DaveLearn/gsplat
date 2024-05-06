@@ -554,7 +554,7 @@ __global__ void rasterize_surfel_indices(
     const float2* __restrict__ xys,
     const float3* __restrict__ conics,
     const float* __restrict__ opacities,
-    int* __restrict__ out_surfel_ids,
+    int* __restrict__ out_surfel_ids
 ) {
     // each thread draws one pixel, but also timeshares caching gaussians in a
     // shared tile
@@ -633,7 +633,7 @@ __global__ void rasterize_surfel_indices(
                                         conic.z * delta.y * delta.y) +
                                 conic.y * delta.x * delta.y;
             // Treat as surfel area where gaussian density is > e^-0.5 
-            if sigma > 0.5f {
+            if (sigma > 0.5f) {
                 continue;
             }
             

@@ -4,7 +4,7 @@ from typing import Any
 import torch
 
 from .project_gaussians import project_gaussians
-from .rasterize import rasterize_gaussians, rasterize_indices
+from .rasterize import rasterize_gaussians, rasterize_indices, rasterize_surfel_indices
 from .sh import spherical_harmonics
 from .utils import (
     bin_and_sort_gaussians,
@@ -22,6 +22,7 @@ __all__ = [
     "spherical_harmonics",
     # utils
     "rasterize_indices",
+    "rasterize_surfel_indices",
     "bin_and_sort_gaussians",
     "compute_cumulative_intersects",
     "compute_cov2d_bounds",
